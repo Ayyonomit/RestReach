@@ -405,9 +405,9 @@
     <div class="setup-banner" id="api-banner">
       <span class="icon">🔑</span>
       <div style="flex:1">
-        <strong>Set your Anthropic API key to enable AI message generation.</strong>
+        <strong>Set your free Google Gemini API key to enable AI message generation.</strong>
         <div style="font-size:13px; color:var(--text2); margin-top:2px;">
-          Free to get at <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a>. Goes in Settings tab.
+          100% free at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--blue)">aistudio.google.com/apikey</a> — no credit card needed.
         </div>
       </div>
       <button class="btn btn-sm btn-blue" onclick="go('settings')">Set key</button>
@@ -647,14 +647,14 @@
       <p class="page-sub">Configure your API key, defaults, and profile.</p>
 
       <div class="card">
-        <div class="card-title">🔑 Anthropic API Key</div>
+        <div class="card-title">🔑 Google Gemini API Key (Free)</div>
         <div class="tip">
-          Your API key is stored <strong>only in your browser (localStorage)</strong>. It never leaves your device and is never sent to any server except Anthropic's API directly.
-          Get your free key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a>.
+          Your API key is stored <strong>only in your browser (localStorage)</strong>. It never leaves your device.
+          Get your 100% free key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--blue)">aistudio.google.com/apikey</a> — no credit card ever.
         </div>
         <div class="field" style="margin-bottom:12px">
-          <label>API Key (starts with sk-ant-...)</label>
-          <input type="password" id="s-apikey" placeholder="sk-ant-api03-..." />
+          <label>Gemini API Key (starts with AIza...)</label>
+          <input type="password" id="s-apikey" placeholder="AIzaSy..." />
         </div>
         <button class="btn btn-green" onclick="saveKey()">💾 Save API Key</button>
         <button class="btn btn-danger btn-sm" style="margin-left:8px" onclick="deleteKey()">🗑 Remove Key</button>
@@ -704,7 +704,7 @@
       <div class="card">
         <div class="card-title">🚀 Deployment guide</div>
         <div style="font-size:13px; color:var(--text2); line-height:1.9">
-          <strong style="color:var(--text)">Option 1 — Vercel (recommended, 100% free):</strong><br>
+          <strong style="color:var(--text)">AI Engine:</strong> Google Gemini 2.0 Flash (free forever)<br>
           1. Push this file to a GitHub repo<br>
           2. Go to vercel.com → Import project → Select your repo<br>
           3. Deploy — you get a free <code style="background:var(--bg3); padding:1px 5px; border-radius:3px">yourapp.vercel.app</code> URL instantly<br><br>
@@ -1274,10 +1274,10 @@ document.getElementById('notes-modal').addEventListener('click', function(e) {
 // =============================================
 function saveKey() {
   const key = document.getElementById('s-apikey').value.trim();
-  if (!key.startsWith('sk-ant-')) { toast('Key must start with sk-ant-...', 'error'); return; }
+  if (!key.startsWith('AIza')) { toast('Key must start with AIza...', 'error'); return; }
   localStorage.setItem('rr_apikey', key);
   checkAPIKeyBanner();
-  toast('🔑 API key saved!', 'success');
+  toast('🔑 Gemini API key saved!', 'success');
 }
 
 function deleteKey() {
