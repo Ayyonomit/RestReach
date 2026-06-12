@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RestReach — Cold Outreach Tool for Freelance Web Designers</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>" />
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --bg2: #1a1a1a;
+      --bg3: #242424;
+      --bg4: #2e2e2e;
+      --border: #333;
+      --border2: #444;
+      --text: #f0f0f0;
+      --text2: #aaa;
+      --text3: #666;
+      --accent: #25D366;
+      --accent2: #1ebe5d;
+      --blue: #4f8ef7;
+      --amber: #f5a623;
+      --red: #e74c3c;
+      --purple: #a855f7;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    /* ===== LAYOUT ===== */
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+      letter-spacing: -0.5px;
+    }
+    .logo-sub { font-size: 11px; color: var(--text3); margin-bottom: 2rem; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text2);
+      transition: all 0.15s;
+      margin-bottom: 2px;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .nav-item:hover { background: var(--bg3); color: var(--text); }
+    .nav-item.active { background: var(--bg3); color: var(--text); }
+    .nav-item .icon { font-size: 16px; width: 20px; }
+
+    .sidebar-stats {
+      margin-top: auto;
+      background: var(--bg3);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .sidebar-stats .label { font-size: 11px; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .sidebar-stat { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+    .sidebar-stat span:last-child { color: var(--accent); font-weight: 600; }
+
+    .main { flex: 1; overflow-y: auto; padding: 2rem; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ===== COMPONENTS ===== */
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 0.25rem; }
+    .page-sub { color: var(--text2); font-size: 14px; margin-bottom: 1.5rem; }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text3);
+      margin-bottom: 1rem;
+    }
+
+    label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 5px; }
+
+    input[type=text], input[type=password], input[type=number], textarea, select {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 14px;
+      padding: 9px 12px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 100px; }
+    select option { background: var(--bg3); }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .row.three { grid-template-columns: 1fr 1fr 1fr; }
+    .field { display: flex; flex-direction: column; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border2);
+      background: var(--bg3);
+      color: var(--text);
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--bg4); border-color: #555; }
+    .btn-green { background: var(--accent); border-color: var(--accent); color: #000; }
+    .btn-green:hover { background: var(--accent2); border-color: var(--accent2); }
+    .btn-blue { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .btn-blue:hover { opacity: 0.88; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+    .btn-danger { background: rgba(231,76,60,0.15); border-color: var(--red); color: var(--red); }
+    .btn-danger:hover { background: rgba(231,76,60,0.25); }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-weight: 500;
+    }
+    .badge-green { background: rgba(37,211,102,0.15); color: var(--accent); }
+    .badge-amber { background: rgba(245,166,35,0.15); color: var(--amber); }
+    .badge-red { background: rgba(231,76,60,0.15); color: var(--red); }
+    .badge-blue { background: rgba(79,142,247,0.15); color: var(--blue); }
+    .badge-purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+
+    /* ===== API KEY SETUP ===== */
+    .setup-banner {
+      background: rgba(79,142,247,0.1);
+      border: 1px solid rgba(79,142,247,0.3);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .setup-banner.hidden { display: none; }
+    .setup-banner .icon { font-size: 20px; }
+
+    /* ===== LEADS TABLE ===== */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text3);
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg3); }
+
+    /* ===== STATS CARDS ===== */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+    }
+    .stat-num { font-size: 28px; font-weight: 700; }
+    .stat-label { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .stat-card.green .stat-num { color: var(--accent); }
+    .stat-card.blue .stat-num { color: var(--blue); }
+    .stat-card.amber .stat-num { color: var(--amber); }
+    .stat-card.purple .stat-num { color: var(--purple); }
+
+    /* ===== CHIPS ===== */
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .chip {
+      padding: 5px 14px;
+      border-radius: 99px;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--text2);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--text); }
+    .chip.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 500; }
+
+    /* ===== MESSAGE PREVIEW ===== */
+    .msg-preview {
+      background: var(--bg3);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 1rem 1.25rem;
+      font-size: 14px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 100px;
+      margin-bottom: 12px;
+    }
+    .msg-placeholder { color: var(--text3); font-style: italic; }
+
+    /* ===== LOADING ===== */
+    .loading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text2);
+      font-size: 14px;
+      padding: 12px 0;
+    }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== DIVIDER ===== */
+    .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+
+    /* ===== TIPS ===== */
+    .tip {
+      background: rgba(37,211,102,0.06);
+      border: 1px solid rgba(37,211,102,0.2);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+    .tip strong { color: var(--accent); }
+
+    /* ===== TOAST ===== */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      font-size: 14px;
+      z-index: 999;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      max-width: 320px;
+    }
+    #toast.show { display: flex; }
+    #toast.success { border-color: var(--accent); }
+    #toast.error { border-color: var(--red); }
+
+    /* ===== STATUS SELECT ===== */
+    select.status-sel {
+      padding: 4px 8px;
+      font-size: 12px;
+      width: auto;
+      background: var(--bg3);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text3);
+    }
+    .empty .icon { font-size: 40px; margin-bottom: 1rem; }
+    .empty p { font-size: 14px; }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 480px;
+    }
+    .modal h3 { font-size: 18px; margin-bottom: 0.5rem; }
+    .modal p { font-size: 13px; color: var(--text2); margin-bottom: 1.25rem; }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      .main { padding: 1rem; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .row { grid-template-columns: 1fr; }
+      .row.three { grid-template-columns: 1fr; }
+    }
+
+    /* ===== STEP INDICATORS ===== */
+    .steps { display: flex; gap: 0; margin-bottom: 1.5rem; }
+    .step { flex: 1; padding: 10px 14px; font-size: 13px; background: var(--bg2); border: 1px solid var(--border); border-right: none; color: var(--text3); }
+    .step:last-child { border-right: 1px solid var(--border); }
+    .step.done { background: rgba(37,211,102,0.08); color: var(--accent); border-color: rgba(37,211,102,0.3); }
+    .step .num { font-weight: 700; margin-right: 6px; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">🍽️ RestReach</div>
+    <div class="logo-sub">Cold Outreach for Designers</div>
+
+    <button class="nav-item active" onclick="go('leads')" data-page="leads">
+      <span class="icon">🎯</span> Find Leads
+    </button>
+    <button class="nav-item" onclick="go('compose')" data-page="compose">
+      <span class="icon">✍️</span> Compose
+    </button>
+    <button class="nav-item" onclick="go('tracker')" data-page="tracker">
+      <span class="icon">📊</span> Tracker
+    </button>
+    <button class="nav-item" onclick="go('settings')" data-page="settings">
+      <span class="icon">⚙️</span> Settings
+    </button>
+
+    <div class="sidebar-stats">
+      <div class="label">Today's progress</div>
+      <div class="sidebar-stat"><span>Leads added</span><span id="sb-total">0</span></div>
+      <div class="sidebar-stat"><span>Sent</span><span id="sb-sent">0</span></div>
+      <div class="sidebar-stat"><span>Replied</span><span id="sb-replied">0</span></div>
+      <div class="sidebar-stat"><span>Deals</span><span id="sb-closed">0</span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- API KEY BANNER -->
+    <div class="setup-banner" id="api-banner">
+      <span class="icon">🔑</span>
+      <div style="flex:1">
+        <strong>Set your Anthropic API key to enable AI message generation.</strong>
+        <div style="font-size:13px; color:var(--text2); margin-top:2px;">
+          Free to get at <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a>. Goes in Settings tab.
+        </div>
+      </div>
+      <button class="btn btn-sm btn-blue" onclick="go('settings')">Set key</button>
+    </div>
+
+    <!-- ===== FIND LEADS PAGE ===== -->
+    <div class="page active" id="page-leads">
+      <h1>Find Leads</h1>
+      <p class="page-sub">Add restaurants that have no website. Paste from Google Maps or enter manually.</p>
+
+      <div class="tip">
+        <strong>How to find leads:</strong> Go to Google Maps → search "restaurants [area name]" → click on each restaurant → if there's no website link, they're a lead. Copy their name + phone number here.
+        &nbsp;<a href="https://www.google.com/maps/search/restaurants" target="_blank" style="color:var(--blue)">Open Google Maps ↗</a>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Bulk paste from Google Maps</div>
+        <div class="field" style="margin-bottom:12px">
+          <label>Paste restaurant names + phone numbers (one per line)</label>
+          <textarea id="raw-paste" rows="6" placeholder="Sharma Dhaba, +91 98765 43210&#10;Bhatia Restaurant, 9876543210&#10;Maa Ke Haath, +91 87654 32109&#10;Punjabi Tadka, 8765432109&#10;..."></textarea>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Default city / area (for tracking)</label>
+            <input type="text" id="default-city" placeholder="e.g. Lajpat Nagar, Delhi" />
+          </div>
+          <div class="field">
+            <label>Cuisine / category (optional)</label>
+            <input type="text" id="default-cuisine" placeholder="e.g. North Indian, Dhaba" />
+          </div>
+        </div>
+        <button class="btn btn-green" onclick="bulkParse()">⚡ Parse & Add Leads</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Add single restaurant</div>
+        <div class="row three">
+          <div class="field">
+            <label>Restaurant name *</label>
+            <input type="text" id="add-name" placeholder="e.g. Sharma Dhaba" />
+          </div>
+          <div class="field">
+            <label>Phone number *</label>
+            <input type="text" id="add-phone" placeholder="+91 98765 43210" />
+          </div>
+          <div class="field">
+            <label>City / Area</label>
+            <input type="text" id="add-city" placeholder="e.g. Karol Bagh" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Owner name (if known)</label>
+            <input type="text" id="add-owner" placeholder="e.g. Rajesh Sharma" />
+          </div>
+          <div class="field">
+            <label>Cuisine / type</label>
+            <input type="text" id="add-cuisine" placeholder="e.g. Mughlai, Chinese, Fast Food" />
+          </div>
+        </div>
+        <button class="btn btn-blue" onclick="addSingle()">+ Add Restaurant</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center">
+          <span>All Leads (<span id="leads-count">0</span>)</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+            <button class="btn btn-sm btn-danger" onclick="clearAllLeads()">🗑 Clear All</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Restaurant</th>
+                <th>Phone</th>
+                <th>Area</th>
+                <th>Cuisine</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leads-tbody">
+              <tr>
+                <td colspan="6">
+                  <div class="empty">
+                    <div class="icon">🍴</div>
+                    <p>No leads yet. Paste restaurant data above to get started.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== COMPOSE PAGE ===== -->
+    <div class="page" id="page-compose">
+      <h1>Compose Message</h1>
+      <p class="page-sub">AI generates a personalized cold pitch for each restaurant. Send via WhatsApp with one click.</p>
+
+      <div class="row">
+        <!-- LEFT: settings -->
+        <div>
+          <div class="card">
+            <div class="card-title">Your details</div>
+            <div class="field" style="margin-bottom:10px">
+              <label>Your name</label>
+              <input type="text" id="c-sender" placeholder="e.g. N" />
+            </div>
+            <div class="field" style="margin-bottom:10px">
+              <label>Starting price (₹)</label>
+              <input type="text" id="c-price" placeholder="e.g. 3999" />
+            </div>
+            <div class="field" style="margin-bottom:10px">
+              <label>Delivery time</label>
+              <input type="text" id="c-delivery" placeholder="e.g. 3 days" />
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label>Your portfolio URL (optional)</label>
+              <input type="text" id="c-portfolio" placeholder="yoursite.vercel.app" />
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Tone</div>
+            <div class="chips" id="tone-chips">
+              <button class="chip active" data-tone="friendly" onclick="setTone(this)">😊 Friendly</button>
+              <button class="chip" data-tone="professional" onclick="setTone(this)">👔 Professional</button>
+              <button class="chip" data-tone="hinglish" onclick="setTone(this)">🇮🇳 Hinglish</button>
+              <button class="chip" data-tone="fomo" onclick="setTone(this)">🔥 FOMO</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Select restaurant</div>
+            <div id="compose-lead-list" style="max-height:220px; overflow-y:auto;">
+              <div class="empty" style="padding:1.5rem">
+                <p>No leads yet. Add from Find Leads tab.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: preview + actions -->
+        <div>
+          <div class="card">
+            <div class="card-title">Selected: <span id="selected-rest-name" style="color:var(--text); font-weight:600; text-transform:none; font-size:13px; letter-spacing:0">—</span></div>
+            <button class="btn btn-blue" style="width:100%; justify-content:center; margin-bottom:12px" onclick="generateMsg()">
+              ✨ Generate AI Message
+            </button>
+            <div id="compose-loading" style="display:none" class="loading">
+              <div class="spinner"></div> Claude is writing your pitch...
+            </div>
+            <div id="msg-preview" class="msg-preview">
+              <span class="msg-placeholder">Your generated message will appear here...</span>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-green" onclick="sendWA()" id="wa-btn">
+                💬 Send on WhatsApp
+              </button>
+              <button class="btn" onclick="copyMsg()">📋 Copy</button>
+              <button class="btn" onclick="generateMsg()">🔄 Regenerate</button>
+            </div>
+            <div class="divider"></div>
+            <button class="btn btn-sm" onclick="markAndNext()" style="width:100%; justify-content:center">
+              ✅ Mark as Sent & go to next
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Quick tips</div>
+            <div style="font-size:13px; color:var(--text2); line-height:1.8;">
+              • Send between <strong style="color:var(--text)">10am–12pm</strong> or <strong style="color:var(--text)">4pm–7pm</strong><br>
+              • Follow up after <strong style="color:var(--text)">3 days</strong> if no reply<br>
+              • Mention a <strong style="color:var(--text)">nearby competitor</strong> who has a site<br>
+              • Keep it under <strong style="color:var(--text)">100 words</strong> for WhatsApp
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TRACKER PAGE ===== -->
+    <div class="page" id="page-tracker">
+      <h1>Pipeline Tracker</h1>
+      <p class="page-sub">Track every lead from cold message to closed deal.</p>
+
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="t-total">0</div><div class="stat-label">Total leads</div></div>
+        <div class="stat-card blue"><div class="stat-num" id="t-sent">0</div><div class="stat-label">Messages sent</div></div>
+        <div class="stat-card amber"><div class="stat-num" id="t-replied">0</div><div class="stat-label">Replied</div></div>
+        <div class="stat-card green"><div class="stat-num" id="t-closed">0</div><div class="stat-label">Deals closed</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">All leads pipeline</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Restaurant</th>
+                <th>Phone</th>
+                <th>Area</th>
+                <th>Status</th>
+                <th>Notes</th>
+                <th>Last updated</th>
+              </tr>
+            </thead>
+            <tbody id="tracker-tbody">
+              <tr><td colspan="6"><div class="empty"><p>No leads yet.</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Follow-up messages</div>
+        <div class="chips" id="followup-chips">
+          <button class="chip active" data-fu="3days" onclick="setFU(this)">3-day follow up</button>
+          <button class="chip" data-fu="week" onclick="setFU(this)">1-week follow up</button>
+          <button class="chip" data-fu="final" onclick="setFU(this)">Final nudge</button>
+        </div>
+        <div id="fu-preview" class="msg-preview" style="min-height:60px; font-size:13px;"></div>
+        <div class="btn-group">
+          <button class="btn btn-sm" onclick="copyFU()">📋 Copy follow-up</button>
+          <button class="btn btn-sm btn-blue" onclick="generateFU()">✨ Generate with AI</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS PAGE ===== -->
+    <div class="page" id="page-settings">
+      <h1>Settings</h1>
+      <p class="page-sub">Configure your API key, defaults, and profile.</p>
+
+      <div class="card">
+        <div class="card-title">🔑 Anthropic API Key</div>
+        <div class="tip">
+          Your API key is stored <strong>only in your browser (localStorage)</strong>. It never leaves your device and is never sent to any server except Anthropic's API directly.
+          Get your free key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a>.
+        </div>
+        <div class="field" style="margin-bottom:12px">
+          <label>API Key (starts with sk-ant-...)</label>
+          <input type="password" id="s-apikey" placeholder="sk-ant-api03-..." />
+        </div>
+        <button class="btn btn-green" onclick="saveKey()">💾 Save API Key</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:8px" onclick="deleteKey()">🗑 Remove Key</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">👤 Your Profile (saved as defaults)</div>
+        <div class="row">
+          <div class="field">
+            <label>Your name</label>
+            <input type="text" id="s-name" placeholder="e.g. N" />
+          </div>
+          <div class="field">
+            <label>WhatsApp number (yours)</label>
+            <input type="text" id="s-wa" placeholder="+91 9XXXXXXXXX" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Starting price (₹)</label>
+            <input type="text" id="s-price" placeholder="3999" />
+          </div>
+          <div class="field">
+            <label>Delivery time</label>
+            <input type="text" id="s-delivery" placeholder="3 days" />
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:12px">
+          <label>Portfolio URL</label>
+          <input type="text" id="s-portfolio" placeholder="yoursite.vercel.app" />
+        </div>
+        <button class="btn btn-blue" onclick="saveProfile()">💾 Save Profile</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💾 Data Management</div>
+        <div style="font-size:13px; color:var(--text2); margin-bottom:1rem; line-height:1.7">
+          All your leads are saved in your browser's <strong style="color:var(--text)">localStorage</strong>.
+          Export to CSV to back up or import into a spreadsheet. Clearing data is permanent.
+        </div>
+        <div class="btn-group">
+          <button class="btn" onclick="exportCSV()">⬇ Export all leads (CSV)</button>
+          <button class="btn btn-danger" onclick="clearAllLeads()">🗑 Clear all leads</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🚀 Deployment guide</div>
+        <div style="font-size:13px; color:var(--text2); line-height:1.9">
+          <strong style="color:var(--text)">Option 1 — Vercel (recommended, 100% free):</strong><br>
+          1. Push this file to a GitHub repo<br>
+          2. Go to vercel.com → Import project → Select your repo<br>
+          3. Deploy — you get a free <code style="background:var(--bg3); padding:1px 5px; border-radius:3px">yourapp.vercel.app</code> URL instantly<br><br>
+          <strong style="color:var(--text)">Option 2 — Netlify Drop (no account needed):</strong><br>
+          1. Go to <a href="https://app.netlify.com/drop" target="_blank" style="color:var(--blue)">app.netlify.com/drop</a><br>
+          2. Drag & drop the folder with this index.html<br>
+          3. You get a live URL in 30 seconds<br><br>
+          <strong style="color:var(--text)">Option 3 — GitHub Pages:</strong><br>
+          1. Create a repo, upload index.html<br>
+          2. Settings → Pages → Source: main branch<br>
+          3. Live at <code style="background:var(--bg3); padding:1px 5px; border-radius:3px">yourusername.github.io/repo-name</code>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL: edit lead notes -->
+<div class="modal-overlay" id="notes-modal">
+  <div class="modal">
+    <h3>📝 Update Lead</h3>
+    <p>Add notes, update status, log a reply.</p>
+    <input type="hidden" id="modal-lead-id" />
+    <div class="field" style="margin-bottom:12px">
+      <label>Status</label>
+      <select id="modal-status">
+        <option value="new">🆕 New</option>
+        <option value="sent">📤 Message Sent</option>
+        <option value="replied">💬 Replied</option>
+        <option value="interested">⭐ Interested</option>
+        <option value="closed">✅ Deal Closed</option>
+        <option value="no">❌ Not Interested</option>
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Notes</label>
+      <textarea id="modal-notes" rows="3" placeholder="e.g. Owner said call back Monday, quoted ₹4999..."></textarea>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-green" onclick="saveModalLead()">💾 Save</button>
+      <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// =============================================
+//  STATE
+// =============================================
+let leads = [];
+let selectedLeadId = null;
+let currentMsg = '';
+let currentTone = 'friendly';
+let currentFU = '3days';
+let fuMsg = '';
+
+// =============================================
+//  INIT
+// =============================================
+window.addEventListener('DOMContentLoaded', () => {
+  loadAll();
+  renderLeadsTable();
+  renderTracker();
+  renderComposeLeads();
+  updateSidebar();
+  loadProfileToCompose();
+  checkAPIKeyBanner();
+  setFUPreview();
+});
+
+// =============================================
+//  STORAGE HELPERS
+// =============================================
+function save() {
+  localStorage.setItem('rr_leads', JSON.stringify(leads));
+  updateSidebar();
+  renderComposeLeads();
+}
+
+function loadAll() {
+  const raw = localStorage.getItem('rr_leads');
+  if (raw) leads = JSON.parse(raw);
+
+  const profile = getProfile();
+  if (profile.name) document.getElementById('c-sender').value = profile.name;
+  if (profile.price) document.getElementById('c-price').value = profile.price;
+  if (profile.delivery) document.getElementById('c-delivery').value = profile.delivery;
+  if (profile.portfolio) document.getElementById('c-portfolio').value = profile.portfolio;
+  if (profile.name) document.getElementById('s-name').value = profile.name;
+  if (profile.wa) document.getElementById('s-wa').value = profile.wa;
+  if (profile.price) document.getElementById('s-price').value = profile.price;
+  if (profile.delivery) document.getElementById('s-delivery').value = profile.delivery;
+  if (profile.portfolio) document.getElementById('s-portfolio').value = profile.portfolio;
+  const key = localStorage.getItem('rr_apikey');
+  if (key) document.getElementById('s-apikey').value = key;
+}
+
+function getProfile() {
+  const raw = localStorage.getItem('rr_profile');
+  return raw ? JSON.parse(raw) : {};
+}
+
+function getAPIKey() {
+  return localStorage.getItem('rr_apikey') || '';
+}
+
+function checkAPIKeyBanner() {
+  if (getAPIKey()) {
+    document.getElementById('api-banner').classList.add('hidden');
+  }
+}
+
+// =============================================
+//  NAVIGATION
+// =============================================
+function go(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelector(`[data-page="${page}"]`).classList.add('active');
+
+  if (page === 'tracker') renderTracker();
+  if (page === 'compose') { renderComposeLeads(); loadProfileToCompose(); }
+  if (page === 'leads') renderLeadsTable();
+}
+
+// =============================================
+//  LEADS: PARSE & ADD
+// =============================================
+function bulkParse() {
+  const raw = document.getElementById('raw-paste').value.trim();
+  if (!raw) { toast('Paste some data first!', 'error'); return; }
+  const city = document.getElementById('default-city').value.trim();
+  const cuisine = document.getElementById('default-cuisine').value.trim();
+  const lines = raw.split('\n').filter(l => l.trim());
+  let added = 0;
+
+  lines.forEach(line => {
+    const phoneMatch = line.match(/(\+?91[\s-]?\d{10}|\d{10})/);
+    const phone = phoneMatch ? phoneMatch[0].replace(/[\s-]/g, '') : '';
+    const name = line.replace(/(\+?91[\s-]?\d{10}|\d{10})/g, '').replace(/,|;|\|/g, '').trim();
+    if (!name && !phone) return;
+    leads.push({
+      id: Date.now() + Math.random(),
+      name: name || 'Unknown Restaurant',
+      phone: normalizePhone(phone),
+      city: city,
+      cuisine: cuisine,
+      owner: '',
+      status: 'new',
+      notes: '',
+      addedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    added++;
+  });
+
+  save();
+  renderLeadsTable();
+  document.getElementById('raw-paste').value = '';
+  toast(`✅ Added ${added} lead${added !== 1 ? 's' : ''}!`, 'success');
+}
+
+function addSingle() {
+  const name = document.getElementById('add-name').value.trim();
+  const phone = document.getElementById('add-phone').value.trim();
+  if (!name || !phone) { toast('Name and phone are required.', 'error'); return; }
+
+  leads.push({
+    id: Date.now() + Math.random(),
+    name,
+    phone: normalizePhone(phone),
+    city: document.getElementById('add-city').value.trim(),
+    cuisine: document.getElementById('add-cuisine').value.trim(),
+    owner: document.getElementById('add-owner').value.trim(),
+    status: 'new',
+    notes: '',
+    addedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  });
+
+  save();
+  renderLeadsTable();
+  ['add-name','add-phone','add-city','add-cuisine','add-owner'].forEach(id => document.getElementById(id).value = '');
+  toast('✅ Restaurant added!', 'success');
+}
+
+function normalizePhone(p) {
+  if (!p) return '';
+  const digits = p.replace(/\D/g,'');
+  if (digits.length === 10) return '91' + digits;
+  if (digits.startsWith('91') && digits.length === 12) return digits;
+  if (digits.startsWith('0') && digits.length === 11) return '91' + digits.slice(1);
+  return digits;
+}
+
+function clearAllLeads() {
+  if (!confirm('Delete ALL leads? This cannot be undone.')) return;
+  leads = [];
+  selectedLeadId = null;
+  save();
+  renderLeadsTable();
+  renderTracker();
+  toast('All leads cleared.', 'success');
+}
+
+// =============================================
+//  LEADS TABLE RENDER
+// =============================================
+function statusBadge(s) {
+  const map = {
+    new: '<span class="badge badge-amber">🆕 New</span>',
+    sent: '<span class="badge badge-blue">📤 Sent</span>',
+    replied: '<span class="badge badge-purple">💬 Replied</span>',
+    interested: '<span class="badge badge-green">⭐ Interested</span>',
+    closed: '<span class="badge badge-green">✅ Closed</span>',
+    no: '<span class="badge badge-red">❌ No</span>'
+  };
+  return map[s] || map['new'];
+}
+
+function renderLeadsTable() {
+  const tbody = document.getElementById('leads-tbody');
+  document.getElementById('leads-count').textContent = leads.length;
+  if (!leads.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="icon">🍴</div><p>No leads yet. Paste restaurant data above to get started.</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = leads.map(l => `
+    <tr>
+      <td><strong>${esc(l.name)}</strong>${l.owner ? '<br><span style="font-size:11px;color:var(--text3)">' + esc(l.owner) + '</span>' : ''}</td>
+      <td>${l.phone ? `<a href="https://wa.me/${l.phone}" target="_blank" style="color:var(--accent);text-decoration:none">+${l.phone}</a>` : '—'}</td>
+      <td>${esc(l.city) || '—'}</td>
+      <td>${esc(l.cuisine) || '—'}</td>
+      <td>${statusBadge(l.status)}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-blue" onclick="goCompose('${l.id}')">✍️ Message</button>
+          <button class="btn btn-sm" onclick="openModal('${l.id}')">📝 Notes</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteLead('${l.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function deleteLead(id) {
+  leads = leads.filter(l => String(l.id) !== String(id));
+  if (String(selectedLeadId) === String(id)) selectedLeadId = null;
+  save();
+  renderLeadsTable();
+  renderTracker();
+  toast('Lead removed.', 'success');
+}
+
+// =============================================
+//  COMPOSE
+// =============================================
+function loadProfileToCompose() {
+  const p = getProfile();
+  if (p.name && !document.getElementById('c-sender').value) document.getElementById('c-sender').value = p.name;
+  if (p.price && !document.getElementById('c-price').value) document.getElementById('c-price').value = p.price;
+  if (p.delivery && !document.getElementById('c-delivery').value) document.getElementById('c-delivery').value = p.delivery;
+  if (p.portfolio && !document.getElementById('c-portfolio').value) document.getElementById('c-portfolio').value = p.portfolio;
+}
+
+function renderComposeLeads() {
+  const c = document.getElementById('compose-lead-list');
+  if (!leads.length) {
+    c.innerHTML = '<div class="empty" style="padding:1.25rem"><p>No leads yet. Add from Find Leads tab.</p></div>';
+    return;
+  }
+  const filtered = leads.filter(l => l.status !== 'closed' && l.status !== 'no');
+  if (!filtered.length) {
+    c.innerHTML = '<div class="empty" style="padding:1.25rem"><p>All leads are closed or not interested 🎉</p></div>';
+    return;
+  }
+  c.innerHTML = filtered.map(l => `
+    <div onclick="selectLead('${l.id}')" style="padding:9px 12px; cursor:pointer; border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center; transition:background 0.1s; ${String(selectedLeadId) === String(l.id) ? 'background:rgba(37,211,102,0.1); border-left: 3px solid var(--accent); padding-left:9px;' : ''}">
+      <div>
+        <div style="font-size:13px; font-weight:500">${esc(l.name)}</div>
+        <div style="font-size:11px; color:var(--text3)">${esc(l.city) || esc(l.cuisine) || l.phone || '—'}</div>
+      </div>
+      ${statusBadge(l.status)}
+    </div>
+  `).join('');
+}
+
+function selectLead(id) {
+  selectedLeadId = id;
+  const lead = leads.find(l => String(l.id) === String(id));
+  if (lead) {
+    document.getElementById('selected-rest-name').textContent = lead.name;
+  }
+  renderComposeLeads();
+}
+
+function goCompose(id) {
+  selectLead(id);
+  go('compose');
+}
+
+function setTone(el) {
+  currentTone = el.dataset.tone;
+  document.querySelectorAll('#tone-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function generateMsg() {
+  const apiKey = getAPIKey();
+  if (!apiKey) { toast('Add your Anthropic API key in Settings first!', 'error'); go('settings'); return; }
+
+  const lead = selectedLeadId ? leads.find(l => String(l.id) === String(selectedLeadId)) : null;
+  const restName = lead ? lead.name : 'this restaurant';
+  const restCity = lead ? (lead.city || '') : '';
+  const ownerName = lead ? (lead.owner || '') : '';
+  const cuisine = lead ? (lead.cuisine || '') : '';
+
+  const sender = document.getElementById('c-sender').value || 'N';
+  const price = document.getElementById('c-price').value || '3999';
+  const delivery = document.getElementById('c-delivery').value || '3 days';
+  const portfolio = document.getElementById('c-portfolio').value || '';
+
+  const tones = {
+    friendly: 'casual and friendly, like a fellow young entrepreneur texting. Use a couple emojis. Keep it warm and conversational.',
+    professional: 'professional and concise. No emojis. Polite and formal, suitable for a business owner.',
+    hinglish: 'mix Hindi and English naturally (Hinglish) the way people talk in Delhi NCR. Words like "bhai", "yaar", "boss" are fine. Use 1-2 emojis.',
+    fomo: 'create urgency — mention that their competitors nearby already have websites and are getting more customers online. Conversational but persuasive.'
+  };
+
+  const prompt = `You are a freelance web designer in India sending a cold WhatsApp outreach message to a restaurant owner.
+
+Details:
+- Restaurant: ${restName}
+${restCity ? `- Location: ${restCity}` : ''}
+${cuisine ? `- Cuisine type: ${cuisine}` : ''}
+${ownerName ? `- Owner name: ${ownerName}` : ''}
+- Your name: ${sender}
+- Offer: Professional restaurant website starting at ₹${price}, delivered in ${delivery}
+${portfolio ? `- Your portfolio: ${portfolio}` : ''}
+- Tone: ${tones[currentTone]}
+
+Write a WhatsApp cold outreach message (max 100 words) that:
+1. Opens naturally (no "Dear Sir/Madam")
+2. Mentions you noticed they don't have a website
+3. Quickly explains the benefit (more customers, online menu, Google visibility)
+4. Gives the price and timeline
+${portfolio ? '5. Mentions the portfolio link' : ''}
+6. Has a simple CTA like reply "YES" or "Interested" to know more
+
+Output ONLY the message text. Nothing else. No preamble, no quotes around the message.`;
+
+  document.getElementById('compose-loading').style.display = 'flex';
+  document.getElementById('msg-preview').innerHTML = '<span class="msg-placeholder">Generating...</span>';
+  currentMsg = '';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-calls': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    currentMsg = data.content.map(b => b.text || '').join('').trim();
+    document.getElementById('msg-preview').textContent = currentMsg;
+    document.getElementById('compose-loading').style.display = 'none';
+    toast('✅ Message generated!', 'success');
+  } catch (e) {
+    document.getElementById('compose-loading').style.display = 'none';
+    document.getElementById('msg-preview').innerHTML = `<span style="color:var(--red)">Error: ${e.message}. Check your API key in Settings.</span>`;
+    toast('API error. Check your key.', 'error');
+  }
+}
+
+function sendWA() {
+  if (!currentMsg) { toast('Generate a message first!', 'error'); return; }
+  const lead = selectedLeadId ? leads.find(l => String(l.id) === String(selectedLeadId)) : null;
+  if (!lead || !lead.phone) { toast('No phone number for selected restaurant.', 'error'); return; }
+  const url = `https://wa.me/${lead.phone}?text=${encodeURIComponent(currentMsg)}`;
+  window.open(url, '_blank');
+  // Auto-mark as sent
+  if (lead && lead.status === 'new') {
+    lead.status = 'sent';
+    lead.updatedAt = new Date().toISOString();
+    save();
+    renderComposeLeads();
+  }
+}
+
+function copyMsg() {
+  if (!currentMsg) { toast('Nothing to copy yet.', 'error'); return; }
+  navigator.clipboard.writeText(currentMsg).then(() => toast('📋 Copied to clipboard!', 'success'));
+}
+
+function markAndNext() {
+  if (!selectedLeadId) { toast('Select a restaurant first.', 'error'); return; }
+  const lead = leads.find(l => String(l.id) === String(selectedLeadId));
+  if (lead) {
+    lead.status = 'sent';
+    lead.updatedAt = new Date().toISOString();
+    save();
+  }
+  // Select next unsent lead
+  const unsent = leads.filter(l => l.status === 'new');
+  if (unsent.length) {
+    selectLead(unsent[0].id);
+    currentMsg = '';
+    document.getElementById('msg-preview').innerHTML = '<span class="msg-placeholder">Your generated message will appear here...</span>';
+    toast('✅ Marked sent! Next lead selected.', 'success');
+  } else {
+    toast('✅ All leads messaged!', 'success');
+    renderTracker();
+    go('tracker');
+  }
+}
+
+// =============================================
+//  TRACKER
+// =============================================
+function renderTracker() {
+  const total = leads.length;
+  const sent = leads.filter(l => ['sent','replied','interested','closed'].includes(l.status)).length;
+  const replied = leads.filter(l => ['replied','interested','closed'].includes(l.status)).length;
+  const closed = leads.filter(l => l.status === 'closed').length;
+
+  ['t-total','t-sent','t-replied','t-closed'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = [total, sent, replied, closed][i];
+  });
+
+  updateSidebar();
+
+  const tbody = document.getElementById('tracker-tbody');
+  if (!leads.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><p>No leads yet.</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = leads.map(l => `
+    <tr>
+      <td><strong>${esc(l.name)}</strong></td>
+      <td>${l.phone ? `<a href="https://wa.me/${l.phone}" target="_blank" style="color:var(--accent);text-decoration:none">+${l.phone}</a>` : '—'}</td>
+      <td>${esc(l.city) || '—'}</td>
+      <td>
+        <select class="status-sel" onchange="updateStatus('${l.id}', this.value)">
+          <option value="new" ${l.status==='new'?'selected':''}>🆕 New</option>
+          <option value="sent" ${l.status==='sent'?'selected':''}>📤 Sent</option>
+          <option value="replied" ${l.status==='replied'?'selected':''}>💬 Replied</option>
+          <option value="interested" ${l.status==='interested'?'selected':''}>⭐ Interested</option>
+          <option value="closed" ${l.status==='closed'?'selected':''}>✅ Closed</option>
+          <option value="no" ${l.status==='no'?'selected':''}>❌ Not Interested</option>
+        </select>
+      </td>
+      <td style="max-width:180px; font-size:12px; color:var(--text2)">${esc(l.notes) || '—'}</td>
+      <td style="font-size:11px; color:var(--text3)">${timeAgo(l.updatedAt)}</td>
+    </tr>
+  `).join('');
+}
+
+function updateStatus(id, val) {
+  const lead = leads.find(l => String(l.id) === String(id));
+  if (lead) {
+    lead.status = val;
+    lead.updatedAt = new Date().toISOString();
+    save();
+    renderTracker();
+    toast('Status updated!', 'success');
+  }
+}
+
+// =============================================
+//  FOLLOW-UP MESSAGES
+// =============================================
+const fuTemplates = {
+  '3days': `Hi! 👋 Just following up on my earlier message about building a website for [Restaurant Name]. Still happy to answer any questions. Starting at ₹3999, delivered in 3 days. Let me know if you'd like to see sample work. 🙏`,
+  'week': `Hello again! Checking in about the website offer for [Restaurant Name]. A lot of restaurants in the area are now getting online and seeing more walk-ins from Google. Happy to give you a quick free demo if interested. 😊`,
+  'final': `Hi, last follow-up from my side. If you ever want a professional website for [Restaurant Name] in the future, feel free to reach out. Wishing you great business ahead! 🍽️`
+};
+
+function setFU(el) {
+  currentFU = el.dataset.fu;
+  document.querySelectorAll('#followup-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  setFUPreview();
+}
+
+function setFUPreview() {
+  const t = fuTemplates[currentFU] || '';
+  document.getElementById('fu-preview').textContent = fuMsg || t;
+}
+
+function copyFU() {
+  const text = fuMsg || fuTemplates[currentFU] || '';
+  navigator.clipboard.writeText(text).then(() => toast('📋 Follow-up copied!', 'success'));
+}
+
+async function generateFU() {
+  const apiKey = getAPIKey();
+  if (!apiKey) { toast('Add API key in Settings!', 'error'); return; }
+  const lead = selectedLeadId ? leads.find(l => String(l.id) === String(selectedLeadId)) : null;
+  const restName = lead ? lead.name : 'the restaurant';
+
+  const typeMap = { '3days': '3-day follow-up', 'week': '1-week follow-up', 'final': 'final polite goodbye message' };
+
+  const prompt = `Write a short WhatsApp ${typeMap[currentFU]} message for a freelance web designer following up with ${restName} in India who has not responded to a cold outreach about getting a website. Keep it under 60 words, friendly, not pushy. No emojis except 1 at most. Output ONLY the message.`;
+
+  document.getElementById('fu-preview').textContent = 'Generating...';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-calls': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 150,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    fuMsg = data.content.map(b => b.text || '').join('').trim();
+    document.getElementById('fu-preview').textContent = fuMsg;
+    toast('✅ Follow-up generated!', 'success');
+  } catch(e) {
+    document.getElementById('fu-preview').textContent = 'Error generating. Check API key.';
+  }
+}
+
+// =============================================
+//  MODAL
+// =============================================
+function openModal(id) {
+  const lead = leads.find(l => String(l.id) === String(id));
+  if (!lead) return;
+  document.getElementById('modal-lead-id').value = id;
+  document.getElementById('modal-status').value = lead.status || 'new';
+  document.getElementById('modal-notes').value = lead.notes || '';
+  document.getElementById('notes-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('notes-modal').classList.remove('open');
+}
+
+function saveModalLead() {
+  const id = document.getElementById('modal-lead-id').value;
+  const lead = leads.find(l => String(l.id) === String(id));
+  if (lead) {
+    lead.status = document.getElementById('modal-status').value;
+    lead.notes = document.getElementById('modal-notes').value;
+    lead.updatedAt = new Date().toISOString();
+    save();
+    renderLeadsTable();
+    renderTracker();
+    toast('✅ Lead updated!', 'success');
+  }
+  closeModal();
+}
+
+// Click outside modal to close
+document.getElementById('notes-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// =============================================
+//  SETTINGS
+// =============================================
+function saveKey() {
+  const key = document.getElementById('s-apikey').value.trim();
+  if (!key.startsWith('sk-ant-')) { toast('Key must start with sk-ant-...', 'error'); return; }
+  localStorage.setItem('rr_apikey', key);
+  checkAPIKeyBanner();
+  toast('🔑 API key saved!', 'success');
+}
+
+function deleteKey() {
+  if (!confirm('Remove API key from browser?')) return;
+  localStorage.removeItem('rr_apikey');
+  document.getElementById('s-apikey').value = '';
+  document.getElementById('api-banner').classList.remove('hidden');
+  toast('Key removed.', 'success');
+}
+
+function saveProfile() {
+  const profile = {
+    name: document.getElementById('s-name').value.trim(),
+    wa: document.getElementById('s-wa').value.trim(),
+    price: document.getElementById('s-price').value.trim(),
+    delivery: document.getElementById('s-delivery').value.trim(),
+    portfolio: document.getElementById('s-portfolio').value.trim()
+  };
+  localStorage.setItem('rr_profile', JSON.stringify(profile));
+  loadProfileToCompose();
+  toast('✅ Profile saved!', 'success');
+}
+
+// =============================================
+//  EXPORT CSV
+// =============================================
+function exportCSV() {
+  if (!leads.length) { toast('No leads to export.', 'error'); return; }
+  const headers = ['Name','Phone','City','Cuisine','Owner','Status','Notes','Added','Updated'];
+  const rows = leads.map(l => [
+    l.name, l.phone, l.city, l.cuisine, l.owner, l.status, l.notes,
+    new Date(l.addedAt).toLocaleDateString('en-IN'),
+    new Date(l.updatedAt).toLocaleDateString('en-IN')
+  ].map(v => `"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `restreach-leads-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('⬇ CSV downloaded!', 'success');
+}
+
+// =============================================
+//  SIDEBAR STATS
+// =============================================
+function updateSidebar() {
+  const today = new Date().toDateString();
+  const todayLeads = leads.filter(l => new Date(l.addedAt).toDateString() === today);
+  document.getElementById('sb-total').textContent = todayLeads.length;
+  document.getElementById('sb-sent').textContent = leads.filter(l => ['sent','replied','interested','closed'].includes(l.status)).length;
+  document.getElementById('sb-replied').textContent = leads.filter(l => ['replied','interested','closed'].includes(l.status)).length;
+  document.getElementById('sb-closed').textContent = leads.filter(l => l.status === 'closed').length;
+}
+
+// =============================================
+//  UTILS
+// =============================================
+function esc(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const diff = Date.now() - d.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+let toastTimer;
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
